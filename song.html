@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎵 Your Mood Song</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="song-page">
+  <header class="top-bar">
+    <button class="song-btn" onclick="goBack()">←back</button>
+    <button class="btn history-btn" onclick="goHistory()">History</button>
+    <button class="btn all-btn" onclick="goAllSongs()">All Songs</button>
+  </header>
+
+  <main class="song-container">
+    <h2 id="song-title">Loading…</h2>
+    <audio id="audio-player" controls></audio>
+    <p id="mez-message" class="mez"></p>
+    <button class="btn dont-like" onclick="skipSong()">Don’t Like</button>
+  </main>
+
+  <script>
+  const songs = [
+    {
+      name: "Kabhi kabhi Aditi",
+      file: "Kabhi kabhi Aditi 1.mp3",
+      tags: ["sad", "lonely"],
+      intensities: [7, 6],
+      mez: "Bro why you are sad you shouldn't be sad EVERY THING GONNA BE OKAY",
+      bg: "happy.jpg"
+    },
+    {
+      name: "Kabhi kabhi Aditi",
+      file: "Kabhi kabhi Aditi 2.mp3",
+      tags: ["sad", "lonely"],
+      intensities: [6, 7],
+      mez: "You are not alone pgl nonsense just thodi der ka liya Shanti milli ha dharmik ko wapus kr dena warna wo bawal kr de ga",
+      bg: "sad 1.jpg"
+    },
+    {
+      name: "Kabhi kabhi Aditi",
+      file: "Kabhi kabhi Aditi 3.mp3",
+      tags: ["sad", "lonely"],
+      intensities: [5, 7],
+      mez: "Ohh Happy Happy why mujhe bhi to batta jo bhi ha tu kush ha to lagge jha ma chai ha kushi",
+      bg: "chill 1.jpg"
+    },
+    {
+      name: "But Strong",
+      file: "alone-but-strong.mp3",
+      tags: ["comforting", "chill"],
+      intensities: [5, 7],
+      mez: "You're never really alone.",
+      bg: "love1.jpg"
+    },
+    // Add more songs here
+  ];
+
+  const userMood = JSON.parse(localStorage.getItem("moodData")) || {};
+  const sortedMoods = Object.entries(userMood)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2);
+
+  const topMoods = sortedMoods.map(([mood]) => mood);
+  const topInts = Object.fromEntries(sortedMoods);
+
+  let filteredSongs = songs.filter(song => {
+    const [tag1, tag2] = song.tags;
+    const [int1, int2] = song.intensities;
+
+    return (
+      topMoods.includes(tag1) &&
+      topMoods.includes(tag2) &&
+      Math.abs(topInts[tag1] - int1) <= 3 &&
+      Math.abs(topInts[tag2] - int2) <= 3
+    );
+  });
+
+  if (filteredSongs.length === 0) {
+    filteredSongs = [...songs]; // fallback
+  }
+
+  let currentSongIndex = -1;
+
+  function playRandomSong() {
+    if (filteredSongs.length === 0) return;
+
+    let nextIndex;
+    do {
+      nextIndex = Math.floor(Math.random() * filteredSongs.length);
+    } while (nextIndex === currentSongIndex && filteredSongs.length > 1);
+
+    currentSongIndex = nextIndex;
+    const song = filteredSongs[currentSongIndex];
+
+    document.getElementById("song-title").textContent = song.name;
+    document.getElementById("mez-message").textContent = song.mez;
+    document.getElementById("audio-player").src = song.file;
+    document.body.style.backgroundImage = `url('${song.bg}')`;
+
+    // ---- Save played song to localStorage history ----
+    let history = JSON.parse(localStorage.getItem("songHistory")) || [];
+    history.push({ name: song.name, file: song.file });
+    localStorage.setItem("songHistory", JSON.stringify(history));
+  }
+
+  function skipSong() {
+    playRandomSong();
+  }
+
+  function goBack() {
+    window.history.back();
+  }
+
+  function goHistory() {
+    window.location.href = "history.html";
+  }
+
+  function goAllSongs() {
+    const pass = prompt("Enter password to access all songs:");
+    if (pass === "1911") {
+      window.location.href = "songlist.html";
+    } else {
+      alert("Incorrect password!");
+    }
+  }
+
+  // Load first song
+  playRandomSong();
+</script>
+</body>
+</html>

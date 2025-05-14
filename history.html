@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+    <link rel="stylesheet" href="style.css">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Song History</title>
+  
+</head>
+<body class="history">
+  <header>
+    <button class="btn" onclick="window.location.href='index.html'">← Back</button>
+    <h1>Song History</h1>
+  </header>
+
+  <main>
+    <div id="history-container"></div>
+    <audio id="audio-player" controls></audio>
+    <button class="btn clear-btn" onclick="clearHistory()">Clear All History</button>
+  </main>
+<script>
+  const historyContainer = document.getElementById("history-container");
+  const audioPlayer = document.getElementById("audio-player");
+  let currentlyPlaying = null;
+
+  function loadHistory() {
+    const history = JSON.parse(localStorage.getItem("songHistory")) || [];
+    historyContainer.innerHTML = "";
+
+    if (history.length === 0) {
+      historyContainer.innerHTML = "<p class='empty'>No songs played yet.</p>";
+      return;
+    }
+
+    history.reverse().forEach((entry, index) => {
+      const songDiv = document.createElement("div");
+      songDiv.classList.add("history-item");
+
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = entry.name;
+
+      const playBtn = document.createElement("button");
+      playBtn.textContent = "Play";
+      playBtn.className = "btn play-btn";
+      const songSrc = entry.file || `songs/${entry.file}`;
+
+      playBtn.onclick = () => {
+        const currentSrc = decodeURIComponent(audioPlayer.src.split("/").pop());
+
+        if (currentSrc === decodeURIComponent(songSrc)) {
+          if (!audioPlayer.paused) {
+            audioPlayer.pause();
+            playBtn.textContent = "Play";
+          } else {
+            audioPlayer.play();
+            updateAllButtons();
+            playBtn.textContent = "Pause";
+          }
+        } else {
+          audioPlayer.src = songSrc;
+          audioPlayer.play();
+          currentlyPlaying = songSrc;
+          updateAllButtons();
+          playBtn.textContent = "Pause";
+        }
+      };
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "×";
+      deleteBtn.className = "btn delete-btn";
+      deleteBtn.onclick = () => {
+        const original = JSON.parse(localStorage.getItem("songHistory")) || [];
+        original.splice(original.length - 1 - index, 1); // reverse index
+        localStorage.setItem("songHistory", JSON.stringify(original));
+        loadHistory();
+      };
+
+      songDiv.appendChild(nameSpan);
+      songDiv.appendChild(playBtn);
+      songDiv.appendChild(deleteBtn);
+      historyContainer.appendChild(songDiv);
+    });
+  }
+
+  function updateAllButtons() {
+    document.querySelectorAll(".play-btn").forEach(btn => {
+      btn.textContent = "Play";
+    });
+  }
+
+  function clearHistory() {
+    localStorage.removeItem("songHistory");
+    loadHistory();
+  }
+
+  audioPlayer.addEventListener("ended", () => {
+    updateAllButtons();
+  });
+
+  loadHistory();
+</script>
+  
+</body>
+</html>

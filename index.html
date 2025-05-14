@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Choose Your Mood</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>What's Your Mood Today?</h1>
+
+    <div class="sliders">
+      <div class="slider-group">
+        <label for="sad">Sadness 😢: <span id="sad-val">0</span>/10</label>
+        <input type="range" min="0" max="10" value="0" id="sad" />
+      </div>
+
+      <div class="slider-group">
+        <label for="happy">Happiness 😊: <span id="happy-val">0</span>/10</label>
+        <input type="range" min="0" max="10" value="0" id="happy" />
+      </div>
+
+      <div class="slider-group">
+        <label for="comforting">Comforting 😄: <span id="comforting-val">0</span>/10</label>
+        <input type="range" min="0" max="10" value="0" id="comforting" />
+      </div>
+
+      <div class="slider-group">
+        <label for="chill">Chill 🧊: <span id="chill-val">0</span>/10</label>
+        <input type="range" min="0" max="10" value="0" id="chill" />
+      </div>
+
+      <div class="slider-group">
+        <label for="lonely">Loneliness 🥺: <span id="lonely-val">0</span>/10</label>
+        <input type="range" min="0" max="10" value="0" id="lonely" />
+      </div>
+
+      <div class="slider-group">
+        <label for="love">Love ❤️: <span id="love-val">0</span>/10</label>
+        <input type="range" min="0" max="10" value="0" id="love" />
+      </div>
+    </div>
+
+    <h3>Slide to set your mood</h3>
+    <button onclick="nextPage()">Continue</button>
+  </div>
+
+  <script>
+    const moods = ['sad', 'happy', 'comforting', 'chill', 'lonely', 'love'];
+    const moodColors = {
+      sad: [49, 71, 85],
+      happy: [255, 210, 0],
+      comforting: [249, 83, 198],
+      chill: [28, 146, 210],
+      lonely: [72, 85, 99],
+      love: [221, 36, 118]
+    };
+
+    moods.forEach(mood => {
+      const slider = document.getElementById(mood);
+      const label = document.getElementById(`${mood}-val`);
+      slider.addEventListener("input", () => {
+        label.textContent = slider.value;
+        updateBlendedBackground();
+      });
+    });
+
+    function updateBlendedBackground() {
+      let total = 0;
+      let blended = [0, 0, 0];
+
+      moods.forEach(mood => {
+        const percent = parseInt(document.getElementById(mood).value);
+        const color = moodColors[mood];
+        total += percent;
+        blended = blended.map((val, i) => val + color[i] * percent);
+      });
+
+      if (total === 0) total = 1;
+      blended = blended.map(val => Math.round(val / total));
+      const blendedColor = `rgb(${blended[0]}, ${blended[1]}, ${blended[2]})`;
+
+      document.body.style.background = `linear-gradient(to bottom right, ${blendedColor}, #000)`;
+    }
+
+    function nextPage() {
+      const data = {};
+      moods.forEach(mood => {
+        data[mood] = document.getElementById(mood).value;
+      });
+      localStorage.setItem("moodData", JSON.stringify(data));
+      window.location.href = "song.html";
+    }
+
+    updateBlendedBackground();
+  </script>
+
+</body>
+</html>
